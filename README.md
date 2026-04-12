@@ -1,5 +1,8 @@
 # aviutl2-sourcemonitor-bootstrapper.aux2
 
+> [!WARNING]
+> 非公式です。このブートストラッパーについてのIssueは元リポジトリに投げないでください。
+
 [eizo-gak/aviutl2-SourceMonitor](https://github.com/eizo-gak/aviutl2-SourceMonitor) をデータフォルダ内だけで完結させるためのブートストラッパーです。
 
 ## インストール
