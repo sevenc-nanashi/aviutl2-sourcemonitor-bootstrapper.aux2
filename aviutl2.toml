@@ -1,0 +1,42 @@
+#:schema ./.aviutl2-cli/aviutl2.schema.json
+# 設定ファイルについては https://github.com/sevenc-nanashi/aviutl2-cli を参照してください。
+[project]
+id = "sevenc-nanashi.aviutl2_sourcemonitor_bootstrapper-aux2"
+name = "aviutl2-sourcemonitor-bootstrapper.aux2"
+version = "1.1.0.0"
+
+[artifacts.avcodec]
+source = "https://raw.githubusercontent.com/eizo-gak/aviutl2-sourcemonitor/v1.1.0/avcodec-62.dll"
+destination = "Plugin/aviutl2-sourcemonitor/dependencies/avcodec-62.dll"
+
+[artifacts.avformat]
+source = "https://raw.githubusercontent.com/eizo-gak/aviutl2-sourcemonitor/v1.1.0/avformat-62.dll"
+destination = "Plugin/aviutl2-sourcemonitor/dependencies/avformat-62.dll"
+
+[artifacts.avutil]
+source = "https://raw.githubusercontent.com/eizo-gak/aviutl2-sourcemonitor/v1.1.0/avutil-60.dll"
+destination = "Plugin/aviutl2-sourcemonitor/dependencies/avutil-60.dll"
+
+[artifacts.swresample]
+source = "https://raw.githubusercontent.com/eizo-gak/aviutl2-sourcemonitor/v1.1.0/swresample-6.dll"
+destination = "Plugin/aviutl2-sourcemonitor/dependencies/swresample-6.dll"
+
+[artifacts.swscale]
+source = "https://raw.githubusercontent.com/eizo-gak/aviutl2-sourcemonitor/v1.1.0/swscale-9.dll"
+destination = "Plugin/aviutl2-sourcemonitor/dependencies/swscale-9.dll"
+
+[artifacts.aviutl2_sourcemonitor]
+source = "https://raw.githubusercontent.com/eizo-gak/aviutl2-sourcemonitor/v1.1.0/SourceMonitor.aux2"
+destination = "Plugin/aviutl2-sourcemonitor/SourceMonitor.aux2.dll"
+
+[artifacts.aviutl2_sourcemonitor_bootstrapper_aux2]
+destination = "Plugin/aviutl2-sourcemonitor/aviutl2-sourcemonitor-bootstrapper.aux2"
+[artifacts.aviutl2_sourcemonitor_bootstrapper_aux2.profiles.debug]
+source = "./target/debug/aviutl2_sourcemonitor_bootstrapper_aux2.dll"
+build = "cargo build"
+[artifacts.aviutl2_sourcemonitor_bootstrapper_aux2.profiles.release]
+source = "./target/release/aviutl2_sourcemonitor_bootstrapper_aux2.dll"
+build = "cargo build --release"
+
+[development]
+aviutl2_version = "latest"
