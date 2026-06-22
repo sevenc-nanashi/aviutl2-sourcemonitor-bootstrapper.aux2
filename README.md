@@ -1,7 +1,7 @@
 # aviutl2-sourcemonitor-bootstrapper.aux2
 
 > [!WARNING]
-> 非公式です。このについてのIssueは元リポジトリに投げないでください。
+> 非公式です。この起動用プラグインについてのIssueは元リポジトリに投げないでください。
 
 [eizo-gak/aviutl2-SourceMonitor](https://github.com/eizo-gak/aviutl2-SourceMonitor) をデータフォルダ内だけで完結するための起動用プラグインです。
 aviutl2-SourceMonitor同梱版も配布しています。
