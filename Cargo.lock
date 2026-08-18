@@ -25,7 +25,7 @@ dependencies = [
 
 [[package]]
 name = "aviutl2_sourcemonitor_bootstrapper-aux2"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "anyhow",
  "aviutl2-sys",

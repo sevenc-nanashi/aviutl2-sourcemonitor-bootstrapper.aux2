@@ -1,6 +1,5 @@
 [package]
 name = "aviutl2_sourcemonitor_bootstrapper-aux2"
-version = "0.1.0"
 edition = "2024"
 
 [lib]
