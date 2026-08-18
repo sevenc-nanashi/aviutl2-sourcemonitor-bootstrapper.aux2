@@ -9,7 +9,7 @@ name = "aviutl2_sourcemonitor_bootstrapper_aux2"
 
 [dependencies]
 anyhow = "1.0.102"
-aviutl2-sys = "0.22.0"
+aviutl2-sys = "0.44.2"
 libloading = "0.9.0"
 native-dialog = "0.9.6"
 process_path = "0.1.4"

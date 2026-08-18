@@ -1,3 +1,4 @@
+mod sys;
 use anyhow::Context;
 
 static DEPENDENCY_HANDLES: std::sync::Mutex<Vec<libloading::Library>> =
@@ -63,37 +64,69 @@ fn initialize_core_handle() -> anyhow::Result<()> {
     }
 }
 
+macro_rules! call_function {
+    ($identifier:ident? ($($args:expr),*)) => {
+        unsafe {
+            CORE_HANDLE
+                .lock()
+                .unwrap()
+                .as_ref()
+                .expect("Core library not loaded")
+                .get::<sys::$identifier>(std::ffi::CString::new(stringify!($identifier)).unwrap())
+                .map(|f| f($($args),*))
+        }
+    };
+    ($identifier:ident ($($args:expr),*)) => {
+        unsafe {
+            CORE_HANDLE
+                .lock()
+                .unwrap()
+                .as_ref()
+                .expect("Core library not loaded")
+                .get::<sys::$identifier>(std::ffi::CString::new(stringify!($identifier)).unwrap())
+                .expect(concat!("Failed to get ", stringify!($identifier), " function from core library"))($($args),*)
+        }
+    }
+}
+
 #[unsafe(no_mangle)]
-unsafe extern "C" fn InitializePlugin(_version: u32) -> bool {
-    initialize_core_handle().is_ok()
+unsafe extern "C" fn InitializePlugin(version: u32) -> bool {
+    call_function!(InitializePlugin?(version)).unwrap_or(true)
 }
 
 #[unsafe(no_mangle)]
 unsafe extern "C" fn GetCommonPluginTable() -> *mut aviutl2_sys::plugin2::COMMON_PLUGIN_TABLE {
-    unsafe {
-        CORE_HANDLE
-            .lock()
-            .unwrap()
-            .as_ref()
-            .expect("Core library not loaded")
-            .get::<unsafe extern "C" fn() -> *mut aviutl2_sys::plugin2::COMMON_PLUGIN_TABLE>(
-                b"GetCommonPluginTable\0",
-            )
-            .expect("Failed to get GetCommonPluginTable function from core library")()
-    }
+    call_function!(GetCommonPluginTable())
 }
 
 #[unsafe(no_mangle)]
-unsafe extern "C" fn RegisterPlugin(host: *mut aviutl2_sys::plugin2::HOST_APP_TABLE) {
-    unsafe {
-        CORE_HANDLE
-            .lock()
-            .unwrap()
-            .as_ref()
-            .expect("Core library not loaded")
-            .get::<unsafe extern "C" fn(*mut aviutl2_sys::plugin2::HOST_APP_TABLE)>(
-                b"RegisterPlugin\0",
-            )
-            .expect("Failed to get RegisterPlugin function from core library")(host)
+unsafe extern "C" fn RequiredVersion() -> u32 {
+    if initialize_core_handle().is_err() {
+        return u32::MAX;
     }
+    call_function!(RequiredVersion?()).unwrap_or(0)
+}
+
+#[unsafe(no_mangle)]
+unsafe extern "C" fn UninitializePlugin() {
+    let _ = call_function!(UninitializePlugin?());
+}
+#[unsafe(no_mangle)]
+unsafe extern "C" fn RegisterPlugin(host: *mut aviutl2_sys::plugin2::HOST_APP_TABLE) {
+    call_function!(RegisterPlugin(host))
+}
+
+#[unsafe(no_mangle)]
+unsafe extern "C" fn InitializeLogger(logger: *mut aviutl2_sys::logger2::LOG_HANDLE) {
+    let _ = call_function!(InitializeLogger?(logger));
+}
+
+#[unsafe(no_mangle)]
+unsafe extern "C" fn InitializeConfig(config: *mut aviutl2_sys::config2::CONFIG_HANDLE) {
+    let _ = call_function!(InitializeConfig?(config));
+}
+
+#[unsafe(no_mangle)]
+unsafe extern "C" fn InitializeCache(cache: *mut aviutl2_sys::cache2::CACHE_HANDLE) {
+    let _ = call_function!(InitializeCache?(cache));
 }
