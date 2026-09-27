@@ -1,9 +1,10 @@
+mod log;
 mod sys;
 use anyhow::Context;
 
-static DEPENDENCY_HANDLES: std::sync::Mutex<Vec<libloading::Library>> =
-    std::sync::Mutex::new(Vec::new());
-static CORE_HANDLE: std::sync::Mutex<Option<libloading::Library>> = std::sync::Mutex::new(None);
+static CORE_HANDLE: std::sync::Mutex<Option<libloading::os::windows::Library>> =
+    std::sync::Mutex::new(None);
+static LOG_HANDLE: std::sync::Mutex<Option<crate::log::LogHandle>> = std::sync::Mutex::new(None);
 
 fn get_root_dir() -> std::path::PathBuf {
     process_path::get_dylib_path()
@@ -14,23 +15,6 @@ fn get_root_dir() -> std::path::PathBuf {
 }
 
 fn try_initialize_core_handle() -> anyhow::Result<()> {
-    let mut dependency_handles_lock = DEPENDENCY_HANDLES.lock().unwrap();
-    if dependency_handles_lock.is_empty() {
-        let dependency_paths = [
-            "avutil-60.dll",
-            "swresample-6.dll",
-            "avcodec-62.dll",
-            "avformat-62.dll",
-            "swscale-9.dll",
-        ];
-        for dep in &dependency_paths {
-            let dep_path = get_root_dir().join("dependencies").join(dep);
-            dependency_handles_lock.push(unsafe {
-                libloading::Library::new(dep_path)
-                    .with_context(|| format!("Failed to load dependency: {}", dep))?
-            });
-        }
-    }
     let mut core_handle_lock = CORE_HANDLE.lock().unwrap();
     if core_handle_lock.is_none() {
         let core_path = get_root_dir().join("SourceMonitor.aux2.dll");
@@ -38,8 +22,11 @@ fn try_initialize_core_handle() -> anyhow::Result<()> {
             anyhow::bail!("Core library not found: {}", core_path.to_string_lossy());
         }
         *core_handle_lock = Some(unsafe {
-            libloading::Library::new(core_path)
-                .context("Failed to load core library: SourceMonitor.aux2.dll")?
+            libloading::os::windows::Library::load_with_flags(
+                core_path,
+                libloading::os::windows::LOAD_WITH_ALTERED_SEARCH_PATH,
+            )
+            .context("Failed to load core library: SourceMonitor.aux2.dll")?
         });
     }
     Ok(())
@@ -89,8 +76,23 @@ macro_rules! call_function {
     }
 }
 
+fn bootstrapper_version() -> String {
+    let aviutl2_toml = include_str!("../aviutl2.toml");
+    let version: toml::Value = toml::from_str(aviutl2_toml).expect("Failed to parse aviutl2.toml");
+    let version_str = version
+        .get("project")
+        .and_then(|pkg| pkg.get("version"))
+        .and_then(|v| v.as_str())
+        .expect("Failed to get version from aviutl2.toml");
+    version_str.to_string()
+}
+
 #[unsafe(no_mangle)]
 unsafe extern "C" fn InitializePlugin(version: u32) -> bool {
+    log_info(&format!(
+        "aviutl2-sourcemonitor-bootstrapper.aux2: initializing; version={}",
+        bootstrapper_version()
+    ));
     call_function!(InitializePlugin?(version)).unwrap_or(true)
 }
 
@@ -110,6 +112,10 @@ unsafe extern "C" fn RequiredVersion() -> u32 {
 #[unsafe(no_mangle)]
 unsafe extern "C" fn UninitializePlugin() {
     let _ = call_function!(UninitializePlugin?());
+
+    if let Some(core_handle) = CORE_HANDLE.lock().unwrap().take() {
+        drop(core_handle);
+    }
 }
 #[unsafe(no_mangle)]
 unsafe extern "C" fn RegisterPlugin(host: *mut aviutl2_sys::plugin2::HOST_APP_TABLE) {
@@ -118,6 +124,10 @@ unsafe extern "C" fn RegisterPlugin(host: *mut aviutl2_sys::plugin2::HOST_APP_TA
 
 #[unsafe(no_mangle)]
 unsafe extern "C" fn InitializeLogger(logger: *mut aviutl2_sys::logger2::LOG_HANDLE) {
+    LOG_HANDLE
+        .lock()
+        .unwrap()
+        .replace(crate::log::LogHandle::new(logger));
     let _ = call_function!(InitializeLogger?(logger));
 }
 
@@ -129,4 +139,10 @@ unsafe extern "C" fn InitializeConfig(config: *mut aviutl2_sys::config2::CONFIG_
 #[unsafe(no_mangle)]
 unsafe extern "C" fn InitializeCache(cache: *mut aviutl2_sys::cache2::CACHE_HANDLE) {
     let _ = call_function!(InitializeCache?(cache));
+}
+
+fn log_info(message: &str) {
+    if let Some(log_handle) = LOG_HANDLE.lock().unwrap().as_ref() {
+        log_handle.info(message);
+    }
 }

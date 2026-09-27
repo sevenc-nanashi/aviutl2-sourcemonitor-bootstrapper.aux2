@@ -7,23 +7,23 @@ version = "2.0.0.1"
 
 [artifacts.avcodec]
 source = "https://raw.githubusercontent.com/eizo-gak/aviutl2-sourcemonitor/v2.0.0/avcodec-62.dll"
-destination = "Plugin/aviutl2-sourcemonitor/dependencies/avcodec-62.dll"
+destination = "Plugin/aviutl2-sourcemonitor/avcodec-62.dll"
 
 [artifacts.avformat]
 source = "https://raw.githubusercontent.com/eizo-gak/aviutl2-sourcemonitor/v2.0.0/avformat-62.dll"
-destination = "Plugin/aviutl2-sourcemonitor/dependencies/avformat-62.dll"
+destination = "Plugin/aviutl2-sourcemonitor/avformat-62.dll"
 
 [artifacts.avutil]
 source = "https://raw.githubusercontent.com/eizo-gak/aviutl2-sourcemonitor/v2.0.0/avutil-60.dll"
-destination = "Plugin/aviutl2-sourcemonitor/dependencies/avutil-60.dll"
+destination = "Plugin/aviutl2-sourcemonitor/avutil-60.dll"
 
 [artifacts.swresample]
 source = "https://raw.githubusercontent.com/eizo-gak/aviutl2-sourcemonitor/v2.0.0/swresample-6.dll"
-destination = "Plugin/aviutl2-sourcemonitor/dependencies/swresample-6.dll"
+destination = "Plugin/aviutl2-sourcemonitor/swresample-6.dll"
 
 [artifacts.swscale]
 source = "https://raw.githubusercontent.com/eizo-gak/aviutl2-sourcemonitor/v2.0.0/swscale-9.dll"
-destination = "Plugin/aviutl2-sourcemonitor/dependencies/swscale-9.dll"
+destination = "Plugin/aviutl2-sourcemonitor/swscale-9.dll"
 
 [artifacts.aviutl2_sourcemonitor]
 source = "https://raw.githubusercontent.com/eizo-gak/aviutl2-sourcemonitor/v2.0.0/SourceMonitor.aux2"
